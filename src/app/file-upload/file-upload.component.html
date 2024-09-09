@@ -17,7 +17,7 @@
         <select id="year" name="year" [(ngModel)]="selectedYear" required
           class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
           <option value="" disabled>Select Year</option>
-          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+          <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
         </select>
       </div>
       <!-- Week Selector -->
@@ -26,7 +26,7 @@
         <select id="week" name="week" [(ngModel)]="selectedWeek" required
           class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
           <option value="" disabled>Select Week</option>
-          <option *ngFor="let week of weeks" [value]="week">{{ week }}</option>
+          <option *ngFor="let week of weeks" [ngValue]="week">{{ week }}</option>
         </select>
       </div>
       <!-- File Upload -->

@@ -11,7 +11,7 @@ export class FileUploadComponent implements OnInit {
   selectedDepartment = '';
   selectedYear = '';
   selectedWeek = '';
-  departments = ['007', '019', '063'];
+  departments = ['007', '019', '067'];
   years: number[] = [];
   weeks: number[] = [];
   isLoading = false;

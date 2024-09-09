@@ -1,9 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import '~@fortawesome/fontawesome-free/css/all.min.css';
 
-/* Custom Styles */
+
+ 
 body {
     font-family: 'Roboto', sans-serif;
     background-color: #f0f8ff;
