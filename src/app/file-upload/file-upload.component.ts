@@ -17,6 +17,7 @@ export class FileUploadComponent implements OnInit {
   isLoading = false;
   uploadSuccess = false;
   uploadError = '';
+  successMessage = '';
 
   constructor(private fileUploadService: FileUploadService) {}
 
@@ -68,16 +69,18 @@ export class FileUploadComponent implements OnInit {
 
   onSubmit() {
     this.uploadError = '';
+    this.successMessage = '';
     this.uploadSuccess = false;
 
     if (this.validateForm()) {
-      if (this.selectedFile) { // Ensure selectedFile is not null
+      if (this.selectedFile) {  
         this.isLoading = true;
         this.fileUploadService.upload(this.selectedFile, this.selectedDepartment, this.selectedYear, this.selectedWeek)
           .subscribe({
             next: (response) => {
-              console.log('Upload successful', response);
+              // Assuming response contains the message in the format { message: 'Your message here' }
               this.uploadSuccess = true;
+              this.successMessage = response.message || 'File uploaded successfully!';
               this.resetForm();
             },
             error: (error) => {
@@ -99,5 +102,7 @@ export class FileUploadComponent implements OnInit {
     this.selectedWeek = '';
     this.isLoading = false;
     this.uploadSuccess = false;
+    this.uploadError = '';
+    this.successMessage = '';
   }
 }

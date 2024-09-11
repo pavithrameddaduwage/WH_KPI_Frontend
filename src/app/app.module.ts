@@ -6,7 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { FileUploadComponent } from './file-upload/file-upload.component';
 import { FileUploadService } from './services/file-upload.service';
-import { routes } from './app.routes';  
+import { routes } from './app.routes';
+import { NavbarComponent } from "./navbar/navbar.component";  
 
 @NgModule({
   declarations: [
@@ -16,9 +17,10 @@ import { routes } from './app.routes';
   imports: [
     BrowserModule,
     HttpClientModule,
-    FormsModule, 
-    RouterModule.forRoot(routes)  
-  ],
+    FormsModule,
+    RouterModule.forRoot(routes),
+    NavbarComponent
+],
   providers: [FileUploadService],
   bootstrap: [AppComponent]
 })

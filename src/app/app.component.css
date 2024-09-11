@@ -1,0 +1,25 @@
+ 
+  .footer {
+    text-align: center;
+    /* background-color: #fdfdfd; */
+    /* padding: 10px 0; */
+    color: #666;
+  }
+  
+  
+  .footer {
+    text-align: center;
+    color: #8d95a5;
+    font-size: 0.7rem;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    z-index: 1;  
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: fixed;
+  }
+  
+   
+  
+ 
