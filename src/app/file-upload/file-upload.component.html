@@ -1,80 +1,93 @@
-<div class="bg-gray-100 flex flex-col items-center min-h-screen p-4 overflow-hidden">
-  <div class="bg-white border-2 border-cyan-400 rounded-lg p-6 shadow-lg w-full max-w-md">
-    <h1 class="text-xl font-bold text-cyan-400 text-center mb-4">Upload Ladder Plan</h1>
-    
-    <!-- Display Success Message -->
-    <div *ngIf="uploadSuccess" class="mb-4 text-green-500">
-      {{ successMessage }}
+<div class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen flex flex-col items-center p-6">
+  <!-- Page Header -->
+  <h1 class="text-3xl font-bold text-gray-800 mb-6">
+     <span class="text-sky-600">Upload POS Data</span>
+  </h1>
+
+  <!-- Upload Container -->
+  <div class="bg-white shadow-md rounded-md w-full max-w-lg p-6 space-y-6">
+    <!-- File Type Selector -->
+    <div>
+      <label for="fileType" class="block text-base font-medium text-gray-700 mb-1">Select File Type</label>
+      <select
+        [(ngModel)]="selectedFileType"
+        id="fileType"
+        name="fileType"
+        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
+        required
+        aria-label="File Type"
+      >
+        <option value="" disabled selected>Select the file type</option>
+        <option value="Traited_Store_Details">Traited Store Details</option>
+        <option value="POS_Sale">POS Sale</option>
+        <option value="POS_Qty">POS Quantity</option>
+        <option value="On_Hand_Qty">On Hand Quantity</option>
+      </select>
+      <div *ngIf="uploadError && !selectedFileType" class="text-red-500 text-xs mt-1">
+        Please select a file type.
+      </div>
     </div>
 
-    <!-- Display Error Message -->
-    <div *ngIf="uploadError" class="mb-4 text-red-500">
+    <!-- File Dropzone -->
+    <div
+      class="w-full p-4 border-2 border-dashed rounded-md flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer"
+      (drop)="onFileDrop($event)"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (click)="fileInput.click()"
+      [ngClass]="{'bg-cyan-50 border-cyan-600': isDragOver, 'border-gray-300': !isDragOver}"
+      aria-label="Drag and drop your file here or click to select"
+    >
+      <input
+        type="file"
+        #fileInput
+        id="file"
+        name="file"
+        accept=".csv,.xls,.xlsx"
+        (change)="onFileChange($event)"
+        required
+        class="hidden"
+        aria-label="Upload file"
+      />
+      <div class="flex flex-col items-center space-y-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+        </svg>
+        <p class="text-gray-700 text-center text-sm">
+          <span *ngIf="!selectedFile" class="font-medium">Drag & Drop</span>
+          your file here or <span class="text-sky-600 font-medium underline">click to browse</span>.
+        </p>
+        <p class="text-gray-800 text-xs font-medium" *ngIf="selectedFile">{{ selectedFile.name }}</p>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="uploadError" class="text-red-500 text-xs text-center">
       {{ uploadError }}
     </div>
-    
-    <form (ngSubmit)="onSubmit()" enctype="multipart/form-data" class="space-y-4 flex flex-col items-center">
-      <!-- Department Selector -->
-      <div class="w-full">
-        <label for="department" class="block text-gray-700 text-sm mb-1">Select Department</label>
-        <select
-          id="department"
-          name="department"
-          [(ngModel)]="selectedDepartment"
-          required
-          class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"
-        >
-          <option value="" disabled>Select Department</option>
-          <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
-        </select>
-      </div>
-      <!-- Year Selector -->
-      <div class="w-full">
-        <label for="year" class="block text-gray-700 text-sm mb-1">Year</label>
-        <select
-          id="year"
-          name="year"
-          [(ngModel)]="selectedYear"
-          required
-          class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"
-        >
-          <option value="" disabled>Select Year</option>
-          <option *ngFor="let year of years" [ngValue]="year">{{ year }}</option>
-        </select>
-      </div>
-      <!-- Week Selector -->
-      <div class="w-full">
-        <label for="week" class="block text-gray-700 text-sm mb-1">Week</label>
-        <select
-          id="week"
-          name="week"
-          [(ngModel)]="selectedWeek"
-          required
-          class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"
-        >
-          <option value="" disabled>Select Week</option>
-          <option *ngFor="let week of weeks" [ngValue]="week">{{ week }}</option>
-        </select>
-      </div>
-      <!-- File Upload -->
-      <div class="w-full">
-        <label for="file" class="block text-gray-700 text-sm mb-1">Upload File</label>
-        <input
-          type="file"
-          id="file"
-          name="file"
-          (change)="onFileChange($event)"
-          required
-          class="w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-400"
-        />
-      </div>
-      <!-- Submit Button -->
+
+    <!-- Submit Button -->
+    <div class="flex justify-center">
       <button
         type="submit"
-        class="bg-cyan-400 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-        [disabled]="isLoading"
+        (click)="onSubmit()"
+        class="bg-sky-600 hover:bg-sky-700 text-white text-sm font-medium py-2 px-8 rounded-md shadow focus:outline-none focus:ring-2 focus:ring-sky-300"
+        [disabled]="isLoading || !selectedFile || !selectedFileType"
       >
-        Upload
+        <span *ngIf="isLoading">Uploading...</span>
+        <span *ngIf="!isLoading">Upload File</span>
       </button>
-    </form>
+    </div>
   </div>
+
+  <!-- Modal Dialog -->
+  <app-dialog-box
+    [header]="dialogHeader"
+    [message]="dialogMessage"
+    [isModalOpen]="isModalOpen"
+    [type]="dialogType"
+    [size]="'small'"
+    [closeOnOverlayClick]="true"
+    (confirm)="onDialogClose()"
+  ></app-dialog-box>
 </div>

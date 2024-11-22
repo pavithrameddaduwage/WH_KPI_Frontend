@@ -1,0 +1,29 @@
+/* Styling for the drag-and-drop area */
+.bg-cyan-50 {
+    background-color: #e0f7fa;
+  }
+  
+  .bg-gray-50 {
+    background-color: #f9fafb;
+  }
+  
+  .shadow-xl {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .transition {
+    transition: background-color 0.3s ease;
+  }
+  
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  
+  .text-cyan-500 {
+    color: #06b6d4;
+  }
+  
+  .hover\:bg-gray-100:hover {
+    background-color: #f3f4f6;
+  }
+  

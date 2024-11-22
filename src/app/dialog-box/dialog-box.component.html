@@ -1,0 +1,255 @@
+<div
+  class="relative z-10 transition-opacity duration-300 ease-in-out"
+  aria-labelledby="modal-title"
+  role="dialog"
+  aria-modal="true"
+  [ngClass]="isModalOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'"
+>
+  <!-- Background backdrop -->
+  <div
+    class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity duration-300 ease-in-out"
+    (click)="onBackdropClick()"
+  ></div>
+
+  <!-- Modal wrapper -->
+  <div
+    class="fixed inset-0 z-10 w-screen overflow-y-auto"
+    (click)="onBackdropClick()"
+  >
+    <div
+      class="flex min-h-full items-center justify-center p-4 text-center sm:p-0 transition-transform duration-300 ease-in-out"
+      [ngClass]="isModalOpen ? 'scale-100' : 'scale-95'"
+    >
+      <!-- Modal panel -->
+      <div
+        #modalPanel
+        [ngClass]="{
+          'w-[350px] h-[180px]': size === 'small',
+          'w-[500px] h-[250px]': size === 'medium',
+          'w-[700px] h-[400px]': size === 'large',
+          'w-[90%] h-[90%]':
+            size !== 'small' && size !== 'medium' && size !== 'large'
+        }"
+        class="relative flex flex-col justify-between bg-white text-left shadow-xl rounded-lg transition-all duration-300 ease-in-out"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- ############################################  warning  ########################################### -->
+        <div
+          *ngIf="type === 'warning'"
+          class="h-full flex flex-col bg-white rounded-lg justify-between"
+        >
+          <!-- Modal header -->
+          <div
+            class="modal-header flex items-center bg-white pt-3 px-2 rounded-lg cursor-move"
+          >
+            <div
+              class="mx-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-amber-500 bg-white"
+            >
+              <svg
+                class="h-6 w-6 text-amber-500 stroke-amber-500 stroke-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+                />
+              </svg>
+            </div>
+            <div class="text-center ml-4">
+              <h3
+                class="text-lg font-semibold leading-6 text-gray-900"
+                id="modal-title"
+              >
+                {{ header }}
+              </h3>
+            </div>
+          </div>
+
+          <div class="mx-4">
+            <p class="text-base text-gray-500">{{ message }}</p>
+          </div>
+
+          <div class="px-4 bg-white pb-4 flex flex-row-reverse rounded-lg">
+            <button
+              type="button"
+              class="inline-flex w-20 h-8 ml-2 justify-center rounded-md bg-amber-400 text-xs items-center font-bold text-white hover:bg-amber-500 shadow-sm transition delay-100"
+              (click)="onYes()"
+            >
+              YES
+            </button>
+
+            <button
+              type="button"
+              class="inline-flex w-20 h-8 justify-center rounded-md bg-slate-100 items-center text-xs font-semibold text-slate-700 transition delay-200 shadow-sm hover:bg-slate-200"
+              (click)="onNo()"
+            >
+              NO
+            </button>
+          </div>
+        </div>
+
+        <!-- ############################################  info  ########################################### -->
+
+        <div
+          *ngIf="type === 'info'"
+          class="h-full flex flex-col bg-white rounded-lg justify-between"
+        >
+          <!-- Modal header -->
+          <div
+            class="modal-header flex items-center bg-white pt-3 px-2 rounded-lg cursor-move"
+          >
+            <div
+              class="mx-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-blue-500 bg-white"
+            >
+              <svg
+                class="h-6 w-6 text-blue-500 stroke-blue-500 stroke-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+              <h3
+                class="text-base font-semibold leading-6 text-gray-900"
+                id="modal-title"
+              >
+                {{ header }}
+              </h3>
+            </div>
+          </div>
+
+          <div class="mx-4">
+            <p class="text-base text-gray-500">{{ message }}</p>
+          </div>
+
+          <div class="px-4 bg-white py-3 flex flex-row-reverse rounded-lg">
+            <button
+              type="button"
+              class="inline-flex w-20 h-8 justify-center rounded-md bg-blue-400 text-xs items-center font-bold text-white hover:bg-blue-500 shadow-sm transition delay-100"
+              (click)="onNo()"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        <!-- ############################################  Success  ########################################### -->
+        <div
+          *ngIf="type === 'success'"
+          class="h-full flex flex-col bg-white rounded-lg justify-between"
+        >
+          <!-- Modal header -->
+          <div
+            class="modal-header flex items-center bg-white py-3 px-2 rounded-lg cursor-move"
+          >
+            <div
+              class="mx-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-green-500 bg-white"
+            >
+              <svg
+                class="h-6 w-6 text-green-500 stroke-green-500 stroke-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m4.5 12.75 6 6 9-13.5"
+                />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+              <h3
+                class="text-base font-semibold leading-6 text-gray-900"
+                id="modal-title"
+              >
+                {{ header }}
+              </h3>
+            </div>
+          </div>
+
+          <div class="mx-4">
+            <p class="text-base text-gray-500">{{ message }}</p>
+          </div>
+
+          <div class="px-4 bg-white py-3 flex flex-row-reverse rounded-lg">
+            <button
+              type="button"
+              class="inline-flex w-20 h-8 justify-center rounded-md bg-green-400 text-xs items-center font-bold text-white hover:bg-green-500 shadow-sm transition delay-100"
+              (click)="onNo()"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+
+        <!-- ############################################  error  ########################################### -->
+        <div
+          *ngIf="type === 'error'"
+          class="h-full flex flex-col bg-white rounded-lg justify-between"
+        >
+          <!-- Modal header -->
+          <div
+            class="modal-header flex items-center bg-white py-3 px-2 rounded-lg cursor-move"
+          >
+            <div
+              class="mx-0 flex h-10 w-10 items-center justify-center rounded-full border-2 border-red-500 bg-white"
+            >
+              <svg
+                class="h-6 w-6 text-red-500 stroke-red-500 stroke-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+              <h3
+                class="text-base font-semibold leading-6 text-gray-900"
+                id="modal-title"
+              >
+                {{ header }}
+              </h3>
+            </div>
+          </div>
+
+          <div class="mx-4">
+            <p class="text-base text-gray-500">{{ message }}</p>
+          </div>
+
+          <div class="px-4 bg-white py-3 flex flex-row-reverse rounded-lg">
+            <button
+              type="button"
+              class="inline-flex w-20 h-8 justify-center rounded-md bg-red-400 text-xs items-center font-bold text-white hover:bg-red-500 shadow-sm transition delay-100"
+              (click)="onNo()"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -8,6 +8,7 @@ import { FileUploadComponent } from './file-upload/file-upload.component';
 import { FileUploadService } from './services/file-upload.service';
 import { routes } from './app.routes';
 import { NavbarComponent } from "./navbar/navbar.component";  
+import { DialogBoxComponent } from './dialog-box/dialog-box.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { NavbarComponent } from "./navbar/navbar.component";
     HttpClientModule,
     FormsModule,
     RouterModule.forRoot(routes),
-    NavbarComponent
+    NavbarComponent,
+    DialogBoxComponent 
 ],
   providers: [FileUploadService],
   bootstrap: [AppComponent]
