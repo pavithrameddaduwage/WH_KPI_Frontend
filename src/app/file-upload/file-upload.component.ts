@@ -1,145 +1,252 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChildren,
+  ElementRef,
+  QueryList
+} from '@angular/core';
 import { FileUploadService } from '../services/file-upload.service';
 import { firstValueFrom } from 'rxjs';
+
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-file-upload',
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.css'],
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0 }),
+        animate('200ms ease-out', style({ opacity: 1 }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0 }))
+      ])
+    ])
+  ]
 })
 export class FileUploadComponent implements OnInit {
-  selectedFile: File | null = null;
-  selectedFileType: string = '';
-  isLoading: boolean = false;
-  uploadProgress: number = 0; // This will hold the progress percentage
-  uploadSuccess: boolean = false;
-  uploadError: string = '';
-  successMessage: string = '';
-  isDragOver: boolean = false;
-  isModalOpen: boolean = false;
+  fileTypes = [
+    { key: 'diversedaily', label: 'Diversedaily Time Card Report' },
+    { key: 'employeeTotal', label: 'Employee Total Hours Report' },
+    { key: 'horizon', label: 'Horizon GA 48 (EOS)' },
+    { key: 'labor', label: 'Daily Labor Report' }
+  ];
+
+  selectedDate: string = '';
+  uploadedFiles: { [key: string]: File | null } = {};
+  uploadProgress: { [key: string]: number } = {};
+  isLoading: { [key: string]: boolean } = {};
+  isDragOver: string | null = null;
+  uploadStatus: { [key: string]: 'pending' | 'uploading' | 'uploaded' | 'failed' } = {};
+  abortControllers: { [key: string]: AbortController } = {};
+
+  // Dialog properties
+  showSuccessDialog: boolean = false;
+  showClearConfirmDialog: boolean = false;
+  showErrorDialog: boolean = false;
   dialogType: 'info' | 'warning' | 'error' | 'success' = 'info';
   dialogHeader: string = '';
   dialogMessage: string = '';
-  validFileTypes: string[] = [
-    'Traited_Store_Details',
-    'POS_Sale',
-    'POS_Qty',
-    'On_Hand_Qty',
+
+  @ViewChildren('fileInput') fileInputs!: QueryList<ElementRef<HTMLInputElement>>;
+
+  private allowedTypes = [
+    'text/csv',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ];
-  chunkSize: number = 5 * 1024 * 1024; // 5 MB
-  private abortController: AbortController | null = null;
 
-  constructor(private fileUploadService: FileUploadService) {}
+  constructor(public fileUploadService: FileUploadService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    for (const type of this.fileTypes) {
+      this.uploadedFiles[type.key] = null;
+      this.uploadProgress[type.key] = 0;
+      this.isLoading[type.key] = false;
+      this.uploadStatus[type.key] = 'pending';
+    }
+  }
 
-  onFileChange(event: Event) {
+  get isAnyUploading(): boolean {
+    return Object.values(this.uploadStatus).includes('uploading');
+  }
+
+  get hasFileSelected(): boolean {
+    return Object.values(this.uploadedFiles).some(file => !!file);
+  }
+
+  get allUploadsComplete(): boolean {
+    return this.fileTypes.every(type => this.uploadStatus[type.key] === 'uploaded');
+  }
+
+  triggerFileInput(key: string) {
+    const index = this.fileTypes.findIndex(type => type.key === key);
+    const inputRef = this.fileInputs.get(index);
+    inputRef?.nativeElement.click();
+  }
+
+  private isFileTypeAllowed(file: File): boolean {
+    const allowedExtensions = ['csv', 'xls', 'xlsx'];
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+    return this.allowedTypes.includes(file.type) || allowedExtensions.includes(fileExt);
+  }
+
+  private validateAndAssignFile(file: File, key: string): void {
+    if (!this.isFileTypeAllowed(file)) {
+      this.showError(
+        'Invalid File Type',
+        'Only CSV (.csv), Excel (.xls, .xlsx) files are allowed.'
+      );
+      this.uploadedFiles[key] = null;
+      this.uploadStatus[key] = 'pending';
+      this.uploadProgress[key] = 0;
+      return;
+    }
+
+    this.uploadedFiles[key] = file;
+    this.uploadStatus[key] = 'pending';
+    this.uploadProgress[key] = 0;
+  }
+
+  onFileChange(event: Event, key: string) {
     const input = event.target as HTMLInputElement;
-    if (input?.files && input.files.length > 0) {
-      this.selectedFile = input.files[0];
-      this.uploadError = '';
+    if (input?.files?.length) {
+      const file = input.files[0];
+      this.validateAndAssignFile(file, key);
     }
   }
 
-  onFileDrop(event: DragEvent) {
+  onFileDrop(event: DragEvent, key: string) {
     event.preventDefault();
-    this.isDragOver = false;
-    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-      this.selectedFile = event.dataTransfer.files[0];
-      this.uploadError = '';
+    this.isDragOver = null;
+
+    if (event.dataTransfer?.files?.length) {
+      const file = event.dataTransfer.files[0];
+      this.validateAndAssignFile(file, key);
     }
   }
 
-  onDragOver(event: DragEvent) {
+  onDragOver(event: DragEvent, key: string) {
     event.preventDefault();
-    this.isDragOver = true;
+    this.isDragOver = key;
   }
 
   onDragLeave(event: DragEvent) {
     event.preventDefault();
-    this.isDragOver = false;
+    this.isDragOver = null;
   }
 
-  validateForm(): boolean {
-    if (!this.selectedFileType) {
-      this.uploadError = 'Please select a file type.';
-      this.showDialog('warning', 'Warning', this.uploadError);
-      return false;
+  async onSubmitAll() {
+    // Close any open dialogs first
+    this.closeAllDialogs();
+    
+    // Validate date first
+    if (!this.selectedDate) {
+      this.showError('Date Required', 'Please select a report date before uploading.');
+      return;
     }
-    if (!this.selectedFile) {
-      this.uploadError = 'Please select a file.';
-      this.showDialog('warning', 'Warning', this.uploadError);
-      return false;
+
+    // Validate at least one file is selected
+    const keysToUpload = Object.keys(this.uploadedFiles).filter(key => this.uploadedFiles[key]);
+    if (keysToUpload.length === 0) {
+      this.showError('No Files Selected', 'Please select at least one file to upload.');
+      return;
     }
-    if (
-      ![
-        'text/csv',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      ].includes(this.selectedFile.type)
-    ) {
-      this.uploadError =
-        'Invalid file type. Only CSV and Excel files are allowed.';
-      this.showDialog('error', 'Error', this.uploadError);
-      return false;
+
+    // Validate file types
+    for (const key of keysToUpload) {
+      const file = this.uploadedFiles[key];
+      if (file && !this.isFileTypeAllowed(file)) {
+        this.showError(
+          'Invalid File Type', 
+          `The file "${file.name}" is not a valid Excel or CSV file. Only .xls, .xlsx, and .csv files are allowed.`
+        );
+        return;
+      }
     }
-    if (!this.validFileTypes.includes(this.selectedFileType)) {
-      this.uploadError =
-        'Invalid file type selected. Please choose from valid types.';
-      this.showDialog('warning', 'Warning', this.uploadError);
-      return false;
+
+    // If all validations pass, proceed with upload
+    try {
+      for (const key of keysToUpload) {
+        await this.onSubmit(key);
+      }
+      this.showSuccessDialog = true;
+    } catch (error) {
+      console.error('Error in onSubmitAll:', error);
+      this.showError('Upload Error', 'An error occurred during upload. Please try again.');
     }
-    return true;
   }
 
-  async onSubmit() {
-    if (!this.validateForm() || !this.selectedFile) return;
+  async onSubmit(key: string) {
+    const file = this.uploadedFiles[key];
+    if (!file) return;
 
-    // Initialize abort controller to manage cancellation
-    this.abortController = new AbortController();
+    if (!this.isFileTypeAllowed(file)) {
+      this.showError('Invalid File', 'Only CSV and Excel files are allowed.');
+      return;
+    }
 
-    this.isLoading = true;
-    this.uploadProgress = 0;
-    this.dialogHeader = 'Uploading...';
-    this.dialogMessage = 'Your file is being uploaded in chunks. Please wait.';
-    this.isModalOpen = false; // Close the dialog box during the upload process
+    const controller = new AbortController();
+    this.abortControllers[key] = controller;
+    this.isLoading[key] = true;
+    this.uploadProgress[key] = 0;
+    this.uploadStatus[key] = 'uploading';
 
     try {
-      await this.uploadFileInChunks(this.selectedFile);
-      this.uploadSuccess = true;
-      this.successMessage = 'File uploaded successfully!';
-      this.showDialog('success', 'Success', this.successMessage);
+      await this.uploadFileInChunks(file, key, controller.signal);
+      this.uploadStatus[key] = 'uploaded';
     } catch (error: any) {
-      if (this.abortController?.signal.aborted) {
-        this.uploadError = 'Upload was canceled by the user.';
-        this.showDialog('error', 'Canceled', this.uploadError);
+      if (controller.signal.aborted) {
+        this.showError('Canceled', 'Upload was canceled by the user.');
       } else {
-        this.uploadError =
-          error?.message || 'Upload failed. Please try again later.';
-        this.showDialog('error', 'Error', this.uploadError.substring(0, 100)); // Show a shortened error message
+        const errMsg = error?.message || 'Upload failed.';
+        this.showError('Error', errMsg.substring(0, 100));
+        console.error('[onSubmit] Upload error:', error);
       }
+      this.uploadStatus[key] = 'failed';
+      throw error;
     } finally {
-      this.isLoading = false;
-      this.resetForm();
+      this.isLoading[key] = false;
     }
   }
 
-  cancelUpload() {
-    if (this.abortController) {
-    
-      this.abortController.abort();
-      this.uploadError = 'Upload has been canceled.';
-      this.showDialog('error', 'Upload Canceled', this.uploadError);
-      this.isLoading = false;
-      this.resetForm();
+  cancelAll() {
+    for (const key in this.abortControllers) {
+      this.abortControllers[key]?.abort();
+      this.isLoading[key] = false;
+      this.uploadStatus[key] = 'pending';
+      this.uploadProgress[key] = 0;
     }
   }
 
-  private async uploadFileInChunks(file: File): Promise<void> {
-    const totalChunks = Math.ceil(file.size / this.chunkSize);
+  confirmClearFiles() {
+    this.closeAllDialogs();
+    this.showClearConfirmDialog = true;
+  }
+
+  clearAllFiles() {
+    for (const type of this.fileTypes) {
+      this.uploadedFiles[type.key] = null;
+      this.uploadStatus[type.key] = 'pending';
+      this.uploadProgress[type.key] = 0;
+      this.isLoading[type.key] = false;
+    }
+    this.showClearConfirmDialog = false;
+  }
+
+  private async uploadFileInChunks(file: File, key: string, signal: AbortSignal): Promise<void> {
+    const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+    const totalChunks = Math.ceil(file.size / chunkSize);
 
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-      const start = chunkIndex * this.chunkSize;
-      const end = Math.min(start + this.chunkSize, file.size);
+      if (signal.aborted) {
+        throw new Error('Upload aborted by user.');
+      }
+
+      const start = chunkIndex * chunkSize;
+      const end = Math.min(start + chunkSize, file.size);
       const chunk = file.slice(start, end);
 
       const formData = new FormData();
@@ -147,34 +254,30 @@ export class FileUploadComponent implements OnInit {
       formData.append('chunkIndex', chunkIndex.toString());
       formData.append('totalChunks', totalChunks.toString());
       formData.append('fileName', file.name);
-      formData.append('fileType', this.selectedFileType);
 
-      
-      this.uploadProgress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+      this.uploadProgress[key] = Math.round(((chunkIndex + 1) / totalChunks) * 100);
 
-    
-      try {
-        await firstValueFrom(this.fileUploadService.uploadChunk(formData, this.abortController?.signal));
-      } catch (error) {
-        throw error;
-      }
+      await firstValueFrom(
+        this.fileUploadService.uploadChunk(formData, signal, key, this.selectedDate)
+      );
     }
   }
 
-  private showDialog(type: 'info' | 'success' | 'warning' | 'error', header: string, message: string): void {
-    this.dialogType = type;
+  private showError(header: string, message: string): void {
+    this.closeAllDialogs();
+    this.dialogType = 'error';
     this.dialogHeader = header;
     this.dialogMessage = message;
-    this.isModalOpen = true;
+    this.showErrorDialog = true;
   }
 
-  private resetForm() {
-    this.selectedFile = null;
-    this.selectedFileType = '';
-    this.uploadProgress = 0;
+  private closeAllDialogs(): void {
+    this.showSuccessDialog = false;
+    this.showClearConfirmDialog = false;
+    this.showErrorDialog = false;
   }
 
   onDialogClose() {
-    this.isModalOpen = false;
+    this.closeAllDialogs();
   }
 }
