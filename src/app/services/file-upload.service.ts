@@ -8,9 +8,7 @@ import { environment } from '../../environments/environment';
 })
 export class FileUploadService {
   private apiUrl = environment.uploadApiUrl;
-
   constructor(private http: HttpClient) {}
-
   uploadChunk(
     formData: FormData,
     _signal: AbortSignal | undefined,
