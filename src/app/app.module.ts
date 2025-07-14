@@ -12,11 +12,13 @@ import { DialogBoxComponent } from './dialog-box/dialog-box.component';
 import { FileUploadService } from './services/file-upload.service';
 import { routes } from './app.routes';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { WeeklyReportsComponent } from './weekly-reports/weekly-reports.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    FileUploadComponent
+    FileUploadComponent,
+    WeeklyReportsComponent
   ],
   imports: [
     BrowserModule,

@@ -15,16 +15,17 @@
         </button>
       </div>
       <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-        <div class="flex flex-shrink-0 items-center">
-     
-          <img src="assets/logo.png" class="h-8" alt="Company Logo" />
+        <a href="/">
+  <img src="assets/logo.png" class="h-8" alt="Company Logo" />
+</a>
 
-        </div>
-        <div class="hidden sm:ml-6 sm:block">
-          <div class="flex space-x-4">
-            <!-- Title -->
-            <h1 class="text-horizon-blue text-lg font-semibold">WH-Report Upload</h1>
-          </div>
+        <div class="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-6">
+          <!-- Title -->
+          <h1 class="text-horizon-blue text-lg font-semibold">WH-Report Upload</h1>
+
+          <!-- Links -->
+          <a href="/daily" class="text-gray-300 hover:text-white text-sm font-medium bold">Daily Reports</a>
+          <a href="/weekly" class="text-gray-300 hover:text-white text-sm font-medium">Weekly Reports</a>
         </div>
       </div>
     </div>
@@ -34,6 +35,8 @@
   <div class="sm:hidden" id="mobile-menu">
     <div class="space-y-1 px-2 pb-3 pt-2">
       <h1 class="text-horizon-blue text-lg font-semibold">ILER-POS Data Upload</h1>
+      <a href="/daily" class="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Daily</a>
+      <a href="/weekly" class="block text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">Weekly</a>
     </div>
   </div>
 </nav>
