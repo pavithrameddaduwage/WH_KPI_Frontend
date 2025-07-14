@@ -11,6 +11,7 @@ import { DialogBoxComponent } from './dialog-box/dialog-box.component';
 
 import { FileUploadService } from './services/file-upload.service';
 import { routes } from './app.routes';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { routes } from './app.routes';
     FormsModule,
     RouterModule.forRoot(routes),
     NavbarComponent,        
-    DialogBoxComponent    
+    DialogBoxComponent,
+    BrowserAnimationsModule
   ],
   providers: [FileUploadService],
   bootstrap: [AppComponent]

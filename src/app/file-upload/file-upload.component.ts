@@ -7,8 +7,9 @@ import {
   ChangeDetectorRef
 } from '@angular/core';
 import { FileUploadService } from '../services/file-upload.service';
-import { firstValueFrom } from 'rxjs';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { trigger, transition, style, animate } from '@angular/animations';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-file-upload',
@@ -36,10 +37,9 @@ export class FileUploadComponent implements OnInit {
 
   selectedDate = '';
   uploadedFiles: Record<string, File | null> = {};
-  uploadProgress: Record<string, number> = {};
   isLoading: Record<string, boolean> = {};
   uploadStatus: Record<string, 'pending' | 'uploading' | 'uploaded' | 'failed'> = {};
-  abortControllers: Record<string, AbortController> = {};
+  uploadProgress: Record<string, number> = {};
   isDragOver: string | null = null;
 
   showSuccessDialog = false;
@@ -66,9 +66,9 @@ export class FileUploadComponent implements OnInit {
   ngOnInit() {
     this.fileTypes.forEach(({ key }) => {
       this.uploadedFiles[key] = null;
-      this.uploadProgress[key] = 0;
-      this.isLoading[key] = false;
       this.uploadStatus[key] = 'pending';
+      this.isLoading[key] = false;
+      this.uploadProgress[key] = 0;
     });
   }
 
@@ -103,7 +103,6 @@ export class FileUploadComponent implements OnInit {
     }
 
     this.uploadedFiles[key] = file;
-    this.uploadProgress[key] = 0;
     this.uploadStatus[key] = 'pending';
   }
 
@@ -132,10 +131,7 @@ export class FileUploadComponent implements OnInit {
   }
 
   cancelAll() {
-    Object.keys(this.abortControllers).forEach(key => {
-      this.abortControllers[key]?.abort();
-      this.clearFile(key);
-    });
+    this.fileTypes.forEach(({ key }) => this.clearFile(key));
   }
 
   confirmClearFiles() {
@@ -151,105 +147,103 @@ export class FileUploadComponent implements OnInit {
   clearFile(key: string) {
     this.uploadedFiles[key] = null;
     this.uploadStatus[key] = 'pending';
-    this.uploadProgress[key] = 0;
     this.isLoading[key] = false;
-    delete this.abortControllers[key];
+    this.uploadProgress[key] = 0;
   }
 
-  private async uploadFileInChunks(file: File, key: string, signal: AbortSignal): Promise<void> {
-    const chunkSize = 5 * 1024 * 1024;
-    const totalChunks = Math.ceil(file.size / chunkSize);
-
-    for (let i = 0; i < totalChunks; i++) {
-      if (signal.aborted) throw new Error('Upload aborted by user.');
-
-      const start = i * chunkSize;
-      const chunk = file.slice(start, start + chunkSize);
-      const formData = new FormData();
-
-      formData.append('file', chunk, file.name);
-      formData.append('chunkIndex', i.toString());
-      formData.append('totalChunks', totalChunks.toString());
-      formData.append('fileName', file.name);
-      formData.append('date', this.selectedDate);
-      formData.append('fileType', key);  
-
-      this.uploadProgress[key] = Math.round(((i + 1) / totalChunks) * 100);
-
-      await firstValueFrom(
-        this.fileUploadService.uploadChunk(formData, signal, key, this.selectedDate)
-      );
-    }
+  private async parseExcelFile(file: File): Promise<any[]> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: null });
+        resolve(jsonData);
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsArrayBuffer(file);
+    });
   }
 
   private async uploadSingleFile(key: string): Promise<void> {
     const file = this.uploadedFiles[key];
     if (!file) return;
 
-    const controller = new AbortController();
-    this.abortControllers[key] = controller;
     this.isLoading[key] = true;
     this.uploadStatus[key] = 'uploading';
 
     try {
-      await this.uploadFileInChunks(file, key, controller.signal);
+      const dataArray = await this.parseExcelFile(file);
+
+      this.uploadProgress[key] = 25;
+      await firstValueFrom(
+        this.fileUploadService.uploadData({
+          fileType: key,
+          fileName: file.name,
+          reportDate: this.selectedDate,  
+          data: dataArray
+        })
+      );
+      this.uploadProgress[key] = 100;
       this.uploadStatus[key] = 'uploaded';
-    } catch (error: any) {
+    } catch (error) {
       this.uploadStatus[key] = 'failed';
+      this.uploadProgress[key] = 0;
       throw error;
     } finally {
       this.isLoading[key] = false;
     }
   }
 
- async onSubmitAllSequential() {
-  this.closeAllDialogs();
+  async onSubmitAllSequential() {
+    this.closeAllDialogs();
 
-  if (!this.selectedDate) {
-    return this.showError('Date Required', 'Please select a report date before uploading.');
-  }
+    if (!this.selectedDate) {
+      return this.showError('Date Required', 'Please select a report date before uploading.');
+    }
 
-  const keysToUpload = Object.keys(this.uploadedFiles).filter(
-    key => this.uploadedFiles[key]
-  );
+    const keysToUpload = Object.keys(this.uploadedFiles).filter(
+      key => this.uploadedFiles[key]
+    );
 
-  if (keysToUpload.length === 0) {
-    return this.showError('No Files Selected', 'Please select at least one file.');
-  }
+    if (keysToUpload.length === 0) {
+      return this.showError('No Files Selected', 'Please select at least one file.');
+    }
 
-  const failedFiles: string[] = [];
-  let hasSuccessfulUpload = false;
+    const failedFiles: string[] = [];
+    let hasSuccessfulUpload = false;
 
-  for (const key of keysToUpload) {
-    try {
-      await this.uploadSingleFile(key);
-      hasSuccessfulUpload = true;
-    } catch {
-      const label = this.fileTypes.find(t => t.key === key)?.label || key;
-      failedFiles.push(label);
+    for (const key of keysToUpload) {
+      try {
+        await this.uploadSingleFile(key);
+        hasSuccessfulUpload = true;
+      } catch {
+        const label = this.fileTypes.find(t => t.key === key)?.label || key;
+        failedFiles.push(label);
+      }
+    }
+
+    if (hasSuccessfulUpload) {
+      this.showSuccessDialog = true;
+      this.cdRef.detectChanges();
+    }
+
+    if (failedFiles.length > 0) {
+      this.showError(
+        'Partial Upload Failed',
+        `The following files failed to upload:\n- ${failedFiles.join('\n- ')}`
+      );
     }
   }
-
-  if (hasSuccessfulUpload) {
-    this.showSuccessDialog = true;
-    this.cdRef.detectChanges();
-  }
-
-  if (failedFiles.length > 0) {
-    this.showError(
-      'Partial Upload Failed',
-      `The following files failed to upload:\n- ${failedFiles.join('\n- ')}`
-    );
-  }
-}
-
 
   private showError(header: string, message: string) {
     this.dialogType = 'error';
     this.dialogHeader = header;
     this.dialogMessage = message;
     this.showErrorDialog = true;
-    this.cdRef.detectChanges();  
+    this.cdRef.detectChanges();
   }
 
   private closeAllDialogs() {
