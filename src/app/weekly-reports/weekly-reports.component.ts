@@ -30,7 +30,9 @@ import * as XLSX from 'xlsx';
 export class WeeklyReportsComponent implements OnInit {
   fileTypes = [
     { key: 'employee_weekly', label: 'Employee Weekly Report' },
-    
+    { key: 'diverse_weekly', label: 'Diverse Weekly Payroll Report' },
+    { key: 'hire_dynamics_weekly', label: 'Hire Dynamics Weekly' },    
+    { key: 'freight_breakers_weekly', label: 'Freight Breakers Weekly' },
   ];
 
   startDate: string = '';
