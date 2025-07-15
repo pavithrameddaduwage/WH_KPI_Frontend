@@ -29,10 +29,8 @@ import * as XLSX from 'xlsx';
 })
 export class WeeklyReportsComponent implements OnInit {
   fileTypes = [
-    { key: 'diversedaily', label: 'Diversedaily Weekly Report' },
-    { key: 'employeeTotal', label: 'Employee Total Weekly Hours' },
-    { key: 'horizon', label: 'Horizon GA 48 Weekly (EOS)' },
-    { key: 'labor', label: 'Weekly Labor Report' }
+    { key: 'employee_weekly', label: 'Employee Weekly Report' },
+    
   ];
 
   startDate: string = '';
