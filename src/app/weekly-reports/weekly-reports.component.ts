@@ -35,7 +35,8 @@ export class WeeklyReportsComponent implements OnInit {
     { key: 'labor', label: 'Weekly Labor Report' }
   ];
 
-  selectedDate = '';
+  startDate: string = '';
+  endDate: string = '';
   uploadedFiles: Record<string, File | null> = {};
   isLoading: Record<string, boolean> = {};
   uploadStatus: Record<string, 'pending' | 'uploading' | 'uploaded' | 'failed'> = {};
@@ -82,6 +83,11 @@ export class WeeklyReportsComponent implements OnInit {
 
   get allUploadsComplete(): boolean {
     return this.fileTypes.every(({ key }) => this.uploadStatus[key] === 'uploaded');
+  }
+
+  isDateRangeInvalid(): boolean {
+    if (!this.startDate || !this.endDate) return true;
+    return new Date(this.startDate) > new Date(this.endDate);
   }
 
   triggerFileInput(key: string) {
@@ -182,7 +188,7 @@ export class WeeklyReportsComponent implements OnInit {
         this.fileUploadService.uploadData({
           fileType: key,
           fileName: file.name,
-          reportDate: this.selectedDate,  
+          reportDate: `${this.startDate} to ${this.endDate}`,
           data: dataArray
         })
       );
@@ -200,8 +206,12 @@ export class WeeklyReportsComponent implements OnInit {
   async onSubmitAllSequential() {
     this.closeAllDialogs();
 
-    if (!this.selectedDate) {
-      return this.showError('Date Required', 'Please select a report date before uploading.');
+    if (!this.startDate || !this.endDate) {
+      return this.showError('Date Range Required', 'Please select both start and end dates.');
+    }
+
+    if (this.isDateRangeInvalid()) {
+      return this.showError('Invalid Date Range', 'Start date must be before or equal to end date.');
     }
 
     const keysToUpload = Object.keys(this.uploadedFiles).filter(
