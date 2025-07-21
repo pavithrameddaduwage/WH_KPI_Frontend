@@ -182,8 +182,10 @@ export class FileUploadComponent implements OnInit {
         this.fileUploadService.uploadData({
           fileType: key,
           fileName: file.name,
-          reportDate: this.selectedDate,  
-          data: dataArray
+          reportDate: this.selectedDate,
+          data: dataArray,
+          startDate: '',
+          endDate: ''
         })
       );
       this.uploadProgress[key] = 100;

@@ -174,34 +174,37 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   private async uploadSingleFile(key: string): Promise<void> {
-    const file = this.uploadedFiles[key];
-    if (!file) return;
+  const file = this.uploadedFiles[key];
+  if (!file) return;
 
-    this.isLoading[key] = true;
-    this.uploadStatus[key] = 'uploading';
+  this.isLoading[key] = true;
+  this.uploadStatus[key] = 'uploading';
 
-    try {
-      const dataArray = await this.parseExcelFile(file);
+  try {
+    const dataArray = await this.parseExcelFile(file);
 
-      this.uploadProgress[key] = 25;
-      await firstValueFrom(
-        this.fileUploadService.uploadData({
-          fileType: key,
-          fileName: file.name,
-          reportDate: `${this.startDate} to ${this.endDate}`,
-          data: dataArray
-        })
-      );
-      this.uploadProgress[key] = 100;
-      this.uploadStatus[key] = 'uploaded';
-    } catch (error) {
-      this.uploadStatus[key] = 'failed';
-      this.uploadProgress[key] = 0;
-      throw error;
-    } finally {
-      this.isLoading[key] = false;
-    }
+    this.uploadProgress[key] = 25;
+    await firstValueFrom(
+      this.fileUploadService.uploadData({
+        fileType: key,
+        fileName: file.name,
+        startDate: this.startDate,
+        endDate: this.endDate,
+        data: dataArray,
+        reportDate: ''
+      })
+    );
+    this.uploadProgress[key] = 100;
+    this.uploadStatus[key] = 'uploaded';
+  } catch (error) {
+    this.uploadStatus[key] = 'failed';
+    this.uploadProgress[key] = 0;
+    throw error;
+  } finally {
+    this.isLoading[key] = false;
   }
+}
+
 
   async onSubmitAllSequential() {
     this.closeAllDialogs();

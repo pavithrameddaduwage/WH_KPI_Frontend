@@ -15,6 +15,8 @@ export class FileUploadService {
     fileType: string;
     fileName: string;
     reportDate: string;
+    startDate: string;
+    endDate: string;
     data: any[];
   }): Observable<any> {
    
