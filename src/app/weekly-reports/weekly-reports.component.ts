@@ -157,21 +157,40 @@ export class WeeklyReportsComponent implements OnInit {
     this.uploadProgress[key] = 0;
   }
 
-  private async parseExcelFile(file: File): Promise<any[]> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: null });
-        resolve(jsonData);
-      };
-      reader.onerror = (err) => reject(err);
-      reader.readAsArrayBuffer(file);
-    });
-  }
+private async parseExcelFile(file: File): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[firstSheetName];
+
+      const rawRows = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        defval: null,
+      }) as (string | null)[][];
+
+      const [headerRow, ...dataRows] = rawRows;
+
+      const jsonData = dataRows.map(row => {
+        const obj: Record<string, any> = {};
+        headerRow.forEach((header, index) => {
+          if (header !== null) {
+            obj[header] = row[index];
+          }
+        });
+        return obj;
+      });
+
+      resolve(jsonData);
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+
 
   private async uploadSingleFile(key: string): Promise<void> {
   const file = this.uploadedFiles[key];
