@@ -31,7 +31,7 @@ export class WeeklyReportsComponent implements OnInit {
   fileTypes = [
     { key: 'employee_weekly', label: 'Employee Weekly Report' },
     { key: 'diverse_weekly', label: 'Diverse Weekly Payroll Report' },
-    { key: 'hire_dynamics_weekly', label: 'Hire Dynamics Weekly' },    
+    { key: 'hire_dynamics_weekly', label: 'Hire Dynamics Weekly' },
     { key: 'freight_breakers_weekly', label: 'Freight Breakers Weekly' },
   ];
 
@@ -157,39 +157,130 @@ export class WeeklyReportsComponent implements OnInit {
     this.uploadProgress[key] = 0;
   }
 
-private async parseExcelFile(file: File): Promise<any[]> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
+// private async parseExcelFile(file: File): Promise<any[]> {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.onload = (e: any) => {
+//       const data = new Uint8Array(e.target.result);
+//       const workbook = XLSX.read(data, { type: 'array' });
+//       const firstSheetName = workbook.SheetNames[0];
+//       const worksheet = workbook.Sheets[firstSheetName];
+//
+//       const rawRows = XLSX.utils.sheet_to_json(worksheet, {
+//         header: 1,
+//         defval: null,
+//       }) as (string | null)[][];
+//
+//       const [headerRow, ...dataRows] = rawRows;
+//
+//       const jsonData = dataRows.map(row => {
+//         const obj: Record<string, any> = {};
+//         headerRow.forEach((header, index) => {
+//           if (header !== null) {
+//             obj[header] = row[index];
+//           }
+//         });
+//         return obj;
+//       });
+//
+//       resolve(jsonData);
+//     };
+//     reader.onerror = (err) => reject(err);
+//     reader.readAsArrayBuffer(file);
+//   });
+// }
 
-      const rawRows = XLSX.utils.sheet_to_json(worksheet, {
-        header: 1,
-        defval: null,
-      }) as (string | null)[][];
+//{ key: 'diverse_weekly', label: 'Diverse Weekly Payroll Report' }, report
+  // private async parseExcelFile(file: File): Promise<Record<string, any>[]> {
+  //
+  //   console.log("came here")
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //
+  //     reader.onload = (e: ProgressEvent<FileReader>) => {
+  //       const data = new Uint8Array(e.target?.result as ArrayBuffer);
+  //       const workbook = XLSX.read(data, { type: 'array' });
+  //       const firstSheetName = workbook.SheetNames[0];
+  //       const worksheet = workbook.Sheets[firstSheetName];
+  //
+  //       const rawRows: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, {
+  //         header: 1,
+  //         defval: null,
+  //       });
+  //
+  //       // ✅ Skip the first 5 rows
+  //       const sliced = rawRows.slice(4);
+  //
+  //       if (sliced.length < 2) {
+  //         reject(new Error('Insufficient data after skipping metadata'));
+  //         return;
+  //       }
+  //
+  //       const [headerRow, ...dataRows] = sliced;
+  //
+  //       const jsonData: Record<string, any>[] = dataRows
+  //         .filter(row => row.some(cell => cell !== null && cell !== '')) // skip empty rows
+  //         .map(row => {
+  //           const obj: Record<string, any> = {};
+  //           headerRow.forEach((header, index) => {
+  //             if (header !== null && header !== '') {
+  //               const key = String(header).trim();
+  //               obj[key] = row[index] ?? null;
+  //             }
+  //           });
+  //           return obj;
+  //         });
+  //
+  //       resolve(jsonData);
+  //     };
+  //
+  //     reader.onerror = err => reject(err);
+  //     reader.readAsArrayBuffer(file);
+  //   });
+  // }
 
-      const [headerRow, ...dataRows] = rawRows;
+  private async parseExcelFile(file: File, type: string): Promise<Record<string, any>[]> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-      const jsonData = dataRows.map(row => {
-        const obj: Record<string, any> = {};
-        headerRow.forEach((header, index) => {
-          if (header !== null) {
-            obj[header] = row[index];
-          }
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const rawRows: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          defval: null,
         });
-        return obj;
-      });
 
-      resolve(jsonData);
-    };
-    reader.onerror = (err) => reject(err);
-    reader.readAsArrayBuffer(file);
-  });
-}
+        // 💡 Determine where the headers start
+        const dataSection = type === 'diverse_weekly' ? rawRows.slice(4) : rawRows;
 
+        if (dataSection.length < 2) {
+          reject(new Error('Insufficient data to extract headers and rows'));
+          return;
+        }
+
+        const [headerRow, ...dataRows] = dataSection;
+
+        const jsonData: Record<string, any>[] = dataRows
+          .filter(row => row.some(cell => cell !== null && cell !== '')) // skip empty rows
+          .map(row => {
+            const obj: Record<string, any> = {};
+            headerRow.forEach((header, index) => {
+              const key = String(header ?? `column_${index}`).trim();
+              obj[key] = row[index] ?? null;
+            });
+            return obj;
+          });
+
+        resolve(jsonData);
+      };
+
+      reader.onerror = err => reject(err);
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
 
   private async uploadSingleFile(key: string): Promise<void> {
@@ -200,7 +291,7 @@ private async parseExcelFile(file: File): Promise<any[]> {
   this.uploadStatus[key] = 'uploading';
 
   try {
-    const dataArray = await this.parseExcelFile(file);
+    const dataArray = await this.parseExcelFile(file, key);
 
     this.uploadProgress[key] = 25;
     await firstValueFrom(
