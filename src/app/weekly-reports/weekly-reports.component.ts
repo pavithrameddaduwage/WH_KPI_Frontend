@@ -158,46 +158,48 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   private async parseExcelFile(file: File, type: string): Promise<Record<string, any>[]> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-      reader.onload = (e: ProgressEvent<FileReader>) => {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      const data = new Uint8Array(e.target?.result as ArrayBuffer);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
-        const rawRows: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, {
-          header: 1,
-          defval: null,
-        });
- 
-        const dataSection = type === 'diverse_weekly' ? rawRows.slice(4) : rawRows;
+      const rawRows: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, {
+        header: 1,
+        defval: null,
+      });
+      const dataSection = ['diverse_weekly', 'employee_weekly'].includes(type)
+        ? rawRows.slice(4)
+        : rawRows;
 
-        if (dataSection.length < 2) {
-          reject(new Error('Insufficient data to extract headers and rows'));
-          return;
-        }
+      if (dataSection.length < 2) {
+        reject(new Error('Insufficient data to extract headers and rows'));
+        return;
+      }
 
-        const [headerRow, ...dataRows] = dataSection;
+      const [headerRow, ...dataRows] = dataSection;
 
-        const jsonData: Record<string, any>[] = dataRows
-          .filter(row => row.some(cell => cell !== null && cell !== '')) 
-          .map(row => {
-            const obj: Record<string, any> = {};
-            headerRow.forEach((header, index) => {
-              const key = String(header ?? `column_${index}`).trim();
-              obj[key] = row[index] ?? null;
-            });
-            return obj;
+      const jsonData: Record<string, any>[] = dataRows
+        .filter(row => row.some(cell => cell !== null && cell !== '')) 
+        .map(row => {
+          const obj: Record<string, any> = {};
+          headerRow.forEach((header, index) => {
+            const key = String(header ?? `column_${index}`).trim();
+            obj[key] = row[index] ?? null;
           });
+          return obj;
+        });
 
-        resolve(jsonData);
-      };
+      resolve(jsonData);
+    };
 
-      reader.onerror = err => reject(err);
-      reader.readAsArrayBuffer(file);
-    });
-  }
+    reader.onerror = err => reject(err);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
 
 
   private async uploadSingleFile(key: string): Promise<void> {
