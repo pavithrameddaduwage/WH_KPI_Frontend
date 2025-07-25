@@ -5,7 +5,7 @@
     <div *ngIf="showInitialPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" [@fadeInOut]>
       <div class="bg-white rounded-lg shadow-lg w-full max-w-sm border-t-4 border-blue-500">
         <div class="p-4">
-          <h3 class="text-lg font-semibold text-blue-700 mb-2">Important Notice</h3>
+          <h3 class="text-lg font-semibold text-blue-700 mb-2">Important !</h3>
           <p class="text-sm text-gray-800">
             When uploading the <strong>Employee Weekly Report</strong>, always select the correct week’s date range, even if uploading later, to ensure accurate processing.
           </p>
@@ -41,7 +41,7 @@
             name="startDate"
             required
             #startDateInput="ngModel"
-            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
+            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 bg-white"
           />
         </div>
         <div>
@@ -53,7 +53,7 @@
             name="endDate"
             required
             #endDateInput="ngModel"
-            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white"
+            class="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all duration-200 bg-white"
           />
         </div>
       </div>
@@ -176,16 +176,49 @@
         Cancel
       </button>
 
-      <button *ngIf="hasFileSelected || allUploadsComplete"
-              type="button"
-              (click)="confirmClearFiles()"
-              class="px-4 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-md shadow transition-all duration-300">
+      <button
+        *ngIf="hasFileSelected || allUploadsComplete"
+        type="button"
+        (click)="confirmClearFiles()"
+        class="px-4 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded-md shadow transition-all duration-300"
+      >
         Clear All
       </button>
     </div>
   </div>
 </div>
-
+<div *ngIf="showClearConfirmDialog"
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+     [@fadeInOut]>
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-xs border-t-4 border-blue-500">
+    <div class="p-4 flex items-start">
+      <div class="flex-shrink-0 p-1.5 rounded-full bg-blue-100">
+        <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-gray-900">Confirm Clear</h3>
+        <div class="mt-1">
+          <p class="text-xs text-gray-600">Clear all uploaded files?</p>
+        </div>
+      </div>
+    </div>
+    <div class="bg-gray-50 px-4 py-3 flex justify-end gap-2">
+      <button
+        (click)="showClearConfirmDialog = false"
+        class="px-3 py-1 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-medium rounded shadow-sm transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        Cancel
+      </button>
+      <button
+        (click)="clearAllFiles()"
+        class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded shadow-sm transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        Confirm
+      </button>
+    </div>
+  </div>
 <!-- Success Dialog -->
 <div *ngIf="showSuccessDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" [@fadeInOut]>
   <div class="bg-white rounded-lg shadow-lg w-full max-w-xs border-t-4 border-green-500">
@@ -206,4 +239,5 @@
       </button>
     </div>
   </div>
+  
 </div>
