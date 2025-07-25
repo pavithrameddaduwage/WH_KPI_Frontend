@@ -27,7 +27,7 @@ import { WeeklyReportsComponent } from './weekly-reports/weekly-reports.componen
     RouterModule.forRoot(routes),
     NavbarComponent,        
     DialogBoxComponent,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
   ],
   providers: [FileUploadService],
   bootstrap: [AppComponent]

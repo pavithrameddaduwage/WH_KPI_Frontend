@@ -50,6 +50,9 @@ export class WeeklyReportsComponent implements OnInit {
   dialogHeader = '';
   dialogMessage = '';
 
+  // NEW: show initial info popup on page load
+  showInitialInfoDialog = true;
+
   @ViewChildren('fileInput') fileInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   private readonly allowedTypes = [
@@ -71,6 +74,8 @@ export class WeeklyReportsComponent implements OnInit {
       this.isLoading[key] = false;
       this.uploadProgress[key] = 0;
     });
+    // Show the initial info dialog on load
+    this.showInitialInfoDialog = true;
   }
 
   get isAnyUploading(): boolean {
@@ -158,82 +163,79 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   private async parseExcelFile(file: File, type: string): Promise<Record<string, any>[]> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
 
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
-      const rawRows: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, {
-        header: 1,
-        defval: null,
-      });
-      const dataSection = ['diverse_weekly', 'employee_weekly'].includes(type)
-        ? rawRows.slice(4)
-        : rawRows;
-
-      if (dataSection.length < 2) {
-        reject(new Error('Insufficient data to extract headers and rows'));
-        return;
-      }
-
-      const [headerRow, ...dataRows] = dataSection;
-
-      const jsonData: Record<string, any>[] = dataRows
-        .filter(row => row.some(cell => cell !== null && cell !== '')) 
-        .map(row => {
-          const obj: Record<string, any> = {};
-          headerRow.forEach((header, index) => {
-            const key = String(header ?? `column_${index}`).trim();
-            obj[key] = row[index] ?? null;
-          });
-          return obj;
+        const rawRows: (string | number | null)[][] = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+          defval: null,
         });
+        const dataSection = ['diverse_weekly', 'employee_weekly'].includes(type)
+          ? rawRows.slice(4)
+          : rawRows;
 
-      resolve(jsonData);
-    };
+        if (dataSection.length < 2) {
+          reject(new Error('Insufficient data to extract headers and rows'));
+          return;
+        }
 
-    reader.onerror = err => reject(err);
-    reader.readAsArrayBuffer(file);
-  });
-}
+        const [headerRow, ...dataRows] = dataSection;
 
+        const jsonData: Record<string, any>[] = dataRows
+          .filter(row => row.some(cell => cell !== null && cell !== ''))
+          .map(row => {
+            const obj: Record<string, any> = {};
+            headerRow.forEach((header, index) => {
+              const key = String(header ?? `column_${index}`).trim();
+              obj[key] = row[index] ?? null;
+            });
+            return obj;
+          });
 
+        resolve(jsonData);
+      };
+
+      reader.onerror = err => reject(err);
+      reader.readAsArrayBuffer(file);
+    });
+  }
 
   private async uploadSingleFile(key: string): Promise<void> {
-  const file = this.uploadedFiles[key];
-  if (!file) return;
+    const file = this.uploadedFiles[key];
+    if (!file) return;
 
-  this.isLoading[key] = true;
-  this.uploadStatus[key] = 'uploading';
+    this.isLoading[key] = true;
+    this.uploadStatus[key] = 'uploading';
 
-  try {
-    const dataArray = await this.parseExcelFile(file, key);
+    try {
+      const dataArray = await this.parseExcelFile(file, key);
 
-    this.uploadProgress[key] = 25;
-    await firstValueFrom(
-      this.fileUploadService.uploadData({
-        fileType: key,
-        fileName: file.name,
-        startDate: this.startDate,
-        endDate: this.endDate,
-        data: dataArray,
-        reportDate: ''
-      })
-    );
-    this.uploadProgress[key] = 100;
-    this.uploadStatus[key] = 'uploaded';
-  } catch (error) {
-    this.uploadStatus[key] = 'failed';
-    this.uploadProgress[key] = 0;
-    throw error;
-  } finally {
-    this.isLoading[key] = false;
+      this.uploadProgress[key] = 25;
+      await firstValueFrom(
+        this.fileUploadService.uploadData({
+          fileType: key,
+          fileName: file.name,
+          startDate: this.startDate,
+          endDate: this.endDate,
+          data: dataArray,
+          reportDate: ''
+        })
+      );
+      this.uploadProgress[key] = 100;
+      this.uploadStatus[key] = 'uploaded';
+    } catch (error) {
+      this.uploadStatus[key] = 'failed';
+      this.uploadProgress[key] = 0;
+      throw error;
+    } finally {
+      this.isLoading[key] = false;
+    }
   }
-}
-
 
   async onSubmitAllSequential() {
     this.closeAllDialogs();
@@ -292,9 +294,19 @@ export class WeeklyReportsComponent implements OnInit {
     this.showSuccessDialog = false;
     this.showClearConfirmDialog = false;
     this.showErrorDialog = false;
+    this.showInitialInfoDialog = false;
   }
 
   onDialogClose() {
     this.closeAllDialogs();
   }
+
+ 
+  showInitialPopup: boolean = true;
+
+  closeInitialPopup() {
+    this.showInitialPopup = false;
+  }
+
+  
 }
