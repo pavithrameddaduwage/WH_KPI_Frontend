@@ -4,6 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import {FileUploadService} from "../services/file-upload.service";
 
 @Component({
   selector: 'app-login',
@@ -14,7 +15,7 @@ import { AuthService } from '../auth.service';
 })
 export class LoginComponent {
   formGroup = new FormGroup({
-    email: new FormControl('', [Validators.required]),  
+    email: new FormControl('', [Validators.required]),
     password: new FormControl('', [Validators.required]),
   });
 
@@ -24,7 +25,8 @@ export class LoginComponent {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private fileUploadService:FileUploadService,
   ) {}
 
   handleSubmit() {
@@ -38,16 +40,12 @@ export class LoginComponent {
 
     const { email, password } = this.formGroup.value;
 
-    const backendUrl = 'http://localhost:4005';
+    const backendUrl = 'http://localhost:3800';
 
-    this.http.post<{ access_token: string }>(`${backendUrl}/auth/login`, { email, password }).subscribe({
+    this.fileUploadService.login({ email: email!, password: password! }).subscribe({
       next: (res) => {
         this.authService.setToken(res.access_token);
-
-        
-        this.authService.setUsername(email!);  
-        
-
+        this.authService.setUsername(email!);
         this.router.navigate(['home']);
         this.loading = false;
       },
@@ -55,6 +53,5 @@ export class LoginComponent {
         this.errorMessage = 'Invalid username or password.';
         this.loading = false;
       },
-    });
-  }
+    });  }
 }

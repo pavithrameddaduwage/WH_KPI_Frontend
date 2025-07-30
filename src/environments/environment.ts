@@ -1,6 +1,12 @@
-export const environment = {
-  production: false,
-  uploadApiUrl: 'http://localhost:4005/upload',
-  authApiUrl: 'http://localhost:4005/auth/login',
+const backendPort = 3800;
+const backendBaseUrl = `http://localhost:${backendPort}`;
+// const productionUrl = '';
 
+export const environment = {
+
+  production: false,
+  backendBaseUrl,
+
+  uploadApiUrl: `${backendBaseUrl}/upload`,
+  authApiUrl: `${backendBaseUrl}/auth/login`,
 };
