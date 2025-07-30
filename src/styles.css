@@ -1,6 +1,12 @@
-html, body {  
-    /* overflow: hidden; */
-    margin: 0;
-    padding: 0;
-  }
-  
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: auto;  
+  -ms-overflow-style: none;  
+  scrollbar-width: none;      
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;  
+}
