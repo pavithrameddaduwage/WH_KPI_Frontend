@@ -27,6 +27,8 @@ export class LoginComponent {
     private authService: AuthService
   ) {}
 
+  //test
+
   handleSubmit() {
     if (this.formGroup.invalid) {
       this.errorMessage = 'Please enter your username/email and password.';
