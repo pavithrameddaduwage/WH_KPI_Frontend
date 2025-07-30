@@ -1,16 +1,21 @@
-<div class="flex items-start justify-center min-h-screen pt-12 bg-gradient-to-t from-[rgb(8,47,73)] via-[#1e3a5f] to-[#3c6e91]">
+<div
+  class="flex items-start justify-center min-h-screen pt-12 bg-gradient-to-t from-[rgb(8,47,73)] via-[#1e3a5f] to-[#3c6e91]"
+>
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 mt-8">
     <h2 class="text-3xl font-semibold text-center text-[rgb(8,47,73)] mb-6">Login</h2>
 
     <form [formGroup]="formGroup" (ngSubmit)="handleSubmit()" class="space-y-5">
       <div>
         <input
-          type="email"
-          placeholder="Horizon user name"
+          type="text"
+          placeholder="Username or Email"
           formControlName="email"
           required
           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[rgb(8,47,73)]"
         />
+        <div *ngIf="formGroup.get('email')?.invalid && formGroup.get('email')?.touched" class="text-red-600 text-xs mt-1">
+          Please enter your username or email.
+        </div>
       </div>
 
       <div>
@@ -21,16 +26,23 @@
           required
           class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-[rgb(8,47,73)]"
         />
+        <div *ngIf="formGroup.get('password')?.invalid && formGroup.get('password')?.touched" class="text-red-600 text-xs mt-1">
+          Please enter your password.
+        </div>
       </div>
 
       <div>
         <button
           type="submit"
-          name="login"
+          [disabled]="loading"
           class="w-full py-3 bg-[rgb(8,47,73)] hover:bg-[#123b55] text-white rounded-lg text-sm font-medium transition duration-200"
         >
-          Login
+          {{ loading ? 'Logging in...' : 'Login' }}
         </button>
+      </div>
+
+      <div *ngIf="errorMessage" class="text-red-600 text-center text-sm mt-3">
+        {{ errorMessage }}
       </div>
     </form>
 

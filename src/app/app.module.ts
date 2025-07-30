@@ -1,15 +1,18 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms'; 
+import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { FileUploadComponent } from './file-upload/file-upload.component';
-import { NavbarComponent } from './navbar/navbar.component';  
+import { NavbarComponent } from './navbar/navbar.component';
 import { DialogBoxComponent } from './dialog-box/dialog-box.component';
 
 import { FileUploadService } from './services/file-upload.service';
+import { AuthService } from './auth.service'; // ✅ import AuthService
+import { AuthInterceptor } from './auth.interceptor'; // ✅ import interceptor
+
 import { routes } from './app.routes';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { WeeklyReportsComponent } from './weekly-reports/weekly-reports.component';
@@ -25,11 +28,19 @@ import { WeeklyReportsComponent } from './weekly-reports/weekly-reports.componen
     HttpClientModule,
     FormsModule,
     RouterModule.forRoot(routes),
-    NavbarComponent,        
+    NavbarComponent,
     DialogBoxComponent,
     BrowserAnimationsModule,
   ],
-  providers: [FileUploadService],
+  providers: [
+    FileUploadService,
+    AuthService, // ✅ optional, providedIn: 'root' already handles it
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
