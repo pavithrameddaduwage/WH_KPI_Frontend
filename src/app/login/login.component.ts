@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import {AuthService} from "../auth.service";
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +14,7 @@ import {AuthService} from "../auth.service";
 })
 export class LoginComponent {
   formGroup = new FormGroup({
-    email: new FormControl('', [Validators.required]), // accept username or email
+    email: new FormControl('', [Validators.required]),  
     password: new FormControl('', [Validators.required]),
   });
 
@@ -27,8 +27,6 @@ export class LoginComponent {
     private authService: AuthService
   ) {}
 
-  //test
-
   handleSubmit() {
     if (this.formGroup.invalid) {
       this.errorMessage = 'Please enter your username/email and password.';
@@ -40,15 +38,18 @@ export class LoginComponent {
 
     const { email, password } = this.formGroup.value;
 
-    const backendUrl = 'http://localhost:3800';
+    const backendUrl = 'http://localhost:4005';
 
     this.http.post<{ access_token: string }>(`${backendUrl}/auth/login`, { email, password }).subscribe({
       next: (res) => {
-
         this.authService.setToken(res.access_token);
+
+        
+        this.authService.setUsername(email!);  
+        
+
         this.router.navigate(['home']);
         this.loading = false;
-
       },
       error: (error: HttpErrorResponse) => {
         this.errorMessage = 'Invalid username or password.';
