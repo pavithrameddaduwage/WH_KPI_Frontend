@@ -40,7 +40,7 @@ export class LoginComponent {
 
     const { email, password } = this.formGroup.value;
 
-    const backendUrl = 'http://localhost:3800';
+    // const backendUrl = 'http://localhost:3800';
 
     this.fileUploadService.login({ email: email!, password: password! }).subscribe({
       next: (res) => {
