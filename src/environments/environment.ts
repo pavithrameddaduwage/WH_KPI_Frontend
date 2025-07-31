@@ -1,6 +1,6 @@
 const backendPort = 4005;
 const backendBaseUrl = `http://localhost:${backendPort}`;
-// const productionUrl = '';
+// const productionUrl = 'https://hbs.hgusa.com/wh-report/upload';
 
 export const environment = {
 
