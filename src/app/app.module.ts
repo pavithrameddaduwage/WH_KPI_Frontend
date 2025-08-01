@@ -6,35 +6,39 @@ import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { FileUploadComponent } from './file-upload/file-upload.component';
-import { NavbarComponent } from './navbar/navbar.component';
-import { DialogBoxComponent } from './dialog-box/dialog-box.component';
+import { WeeklyReportsComponent } from './weekly-reports/weekly-reports.component';
+
+import { NavbarComponent } from './navbar/navbar.component'; 
+import { DialogBoxComponent } from './dialog-box/dialog-box.component'; 
 
 import { FileUploadService } from './services/file-upload.service';
-import { AuthService } from './auth.service'; // ✅ import AuthService
-import { AuthInterceptor } from './auth.interceptor'; // ✅ import interceptor
+import { AuthService } from './auth.service';
+import { AuthInterceptor } from './auth.interceptor';
 
 import { routes } from './app.routes';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { WeeklyReportsComponent } from './weekly-reports/weekly-reports.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     FileUploadComponent,
     WeeklyReportsComponent
+    
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     FormsModule,
     RouterModule.forRoot(routes),
-    NavbarComponent,
-    DialogBoxComponent,
     BrowserAnimationsModule,
+
+ 
+    NavbarComponent,
+    DialogBoxComponent
   ],
   providers: [
     FileUploadService,
-    AuthService, // ✅ optional, providedIn: 'root' already handles it
+    AuthService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

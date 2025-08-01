@@ -29,10 +29,10 @@ import * as XLSX from 'xlsx';
 })
 export class FileUploadComponent implements OnInit {
   fileTypes = [
-    { key: 'diversedaily', label: 'Diversedaily Time Card Report' },
-    { key: 'employeeTotal', label: 'Employee Total Hours Report' },
-    { key: 'horizon', label: 'Horizon GA 48 (EOS)' },
-    { key: 'labor', label: 'Daily Labor Report' }
+    { key: 'employeeTotal', label: 'Horizon Group USA – Full time' },
+    { key: 'diversedaily', label: 'Divers Staffing - Temp' },
+    { key: 'horizon', label: 'Freight Breakers - Temp' },
+    { key: 'labor', label: 'Hire Dynamics - Temp' }
   ];
 
   selectedDate = '';

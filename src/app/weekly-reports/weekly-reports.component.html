@@ -26,48 +26,50 @@
       </h1>
     </div>
 
-    <!-- Date Range -->
-    <div class="mb-6 max-w-md mx-auto">
-      <label class="block font-medium text-gray-700 mb-1 text-sm">
-        Select Report Date Range <span class="text-red-500">*</span>
-      </label>
+   <!-- Date Range -->
+<div class="mb-6 max-w-md mx-auto">
+  <label class="block font-medium text-gray-700 mb-1 text-sm">
+    Select Report Date Range <span class="text-red-500">*</span>
+  </label>
 
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label for="start-date" class="block text-sm text-gray-500 ">Start Date</label>
-          <input
-            id="start-date"
-            type="date"
-            [(ngModel)]="startDate"
-            name="startDate"
-            required
-            #startDateInput="ngModel"
-            class="w-full border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white transition"
-          />
-        </div>
-        <div>
-          <label for="end-date" class="block text-sm text-gray-500 mb-1">End Date</label>
-          <input
-            id="end-date"
-            type="date"
-            [(ngModel)]="endDate"
-            name="endDate"
-            required
-            #endDateInput="ngModel"
-            class="w-full border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white transition"
-          />
-        </div>
-      </div>
-
-      <div *ngIf="isDateRangeInvalid()" class="text-red-500 text-sm mt-2 animate-pulse flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clip-rule="evenodd"/>
-        </svg>
-        Please select a valid date range.
-      </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label for="start-date" class="block text-sm text-gray-500">Start Date</label>
+      <input
+        id="start-date"
+        type="date"
+        [(ngModel)]="startDate"
+        (ngModelChange)="onStartDateChange($event)"
+        name="startDate"
+        required
+        #startDateInput="ngModel"
+        class="w-full border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white transition"
+      />
     </div>
+    <div>
+      <label for="end-date" class="block text-sm text-gray-500 mb-1">End Date</label>
+      <input
+        id="end-date"
+        type="date"
+        [(ngModel)]="endDate"
+        name="endDate"
+        readonly
+        required
+        #endDateInput="ngModel"
+        class="w-full border rounded-lg px-4 py-2 text-base focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white transition"
+      />
+    </div>
+  </div>
+
+  <div *ngIf="isDateRangeInvalid()" class="text-red-500 text-sm mt-2 animate-pulse flex items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+      <path fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+            clip-rule="evenodd"/>
+    </svg>
+    Please select a valid date range.
+  </div>
+</div>
 
     <!-- File Upload Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8 text-sm">

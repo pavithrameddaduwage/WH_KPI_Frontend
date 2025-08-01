@@ -29,10 +29,10 @@ import * as XLSX from 'xlsx';
 })
 export class WeeklyReportsComponent implements OnInit {
   fileTypes = [
-    { key: 'employee_weekly', label: 'Employee Weekly Report' },
-    { key: 'diverse_weekly', label: 'Diverse Weekly Payroll Report' },
-    { key: 'hire_dynamics_weekly', label: 'Hire Dynamics Weekly' },
-    { key: 'freight_breakers_weekly', label: 'Freight Breakers Weekly' },
+    { key: 'employee_weekly', label: 'Horizon Group USA – Full time' },
+    { key: 'diverse_weekly', label: 'Divers Staffing - Temp' },
+    { key: 'hire_dynamics_weekly', label: 'Hire Dynamics - Temp' },
+    { key: 'freight_breakers_weekly', label: 'Freight Breakers - Temp' },
   ];
 
   startDate: string = '';
@@ -50,8 +50,8 @@ export class WeeklyReportsComponent implements OnInit {
   dialogHeader = '';
   dialogMessage = '';
 
-  // NEW: show initial info popup on page load
   showInitialInfoDialog = true;
+  showInitialPopup: boolean = true;
 
   @ViewChildren('fileInput') fileInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
@@ -74,7 +74,6 @@ export class WeeklyReportsComponent implements OnInit {
       this.isLoading[key] = false;
       this.uploadProgress[key] = 0;
     });
-    // Show the initial info dialog on load
     this.showInitialInfoDialog = true;
   }
 
@@ -93,6 +92,18 @@ export class WeeklyReportsComponent implements OnInit {
   isDateRangeInvalid(): boolean {
     if (!this.startDate || !this.endDate) return true;
     return new Date(this.startDate) > new Date(this.endDate);
+  }
+
+  onStartDateChange(dateStr: string) {
+    this.startDate = dateStr;
+    if (dateStr) {
+      const start = new Date(dateStr);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      this.endDate = end.toISOString().split('T')[0];
+    } else {
+      this.endDate = '';
+    }
   }
 
   triggerFileInput(key: string) {
@@ -175,6 +186,7 @@ export class WeeklyReportsComponent implements OnInit {
           header: 1,
           defval: null,
         });
+
         const dataSection = ['diverse_weekly', 'employee_weekly'].includes(type)
           ? rawRows.slice(4)
           : rawRows;
@@ -301,12 +313,7 @@ export class WeeklyReportsComponent implements OnInit {
     this.closeAllDialogs();
   }
 
- 
-  showInitialPopup: boolean = true;
-
   closeInitialPopup() {
     this.showInitialPopup = false;
   }
-
-  
 }
