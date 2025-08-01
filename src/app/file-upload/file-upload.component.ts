@@ -31,8 +31,8 @@ export class FileUploadComponent implements OnInit {
   fileTypes = [
     { key: 'employeeTotal', label: 'Horizon Group USA – Full time' },
     { key: 'diversedaily', label: 'Divers Staffing - Temp' },
+    { key: 'labor', label: 'Hire Dynamics - Temp' },
     { key: 'horizon', label: 'Freight Breakers - Temp' },
-    { key: 'labor', label: 'Hire Dynamics - Temp' }
   ];
 
   selectedDate = '';
