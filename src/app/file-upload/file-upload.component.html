@@ -78,7 +78,7 @@
               </ng-container>
               <ng-container *ngIf="uploadedFiles[type.key] && uploadStatus[type.key] !== 'uploading'">
                 <div class="w-full px-2">
-                  <p class="text-sm font-medium text-gray-800 truncate text-center">
+                  <p class="text-sm font-medium text-gray-800 break-words text-center px-2 max-w-full">
                     {{ uploadedFiles[type.key]?.name }}
                   </p>
                 </div>

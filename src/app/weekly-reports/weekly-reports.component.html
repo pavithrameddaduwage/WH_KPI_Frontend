@@ -122,9 +122,10 @@
 
               <!-- File uploaded -->
               <ng-container *ngIf="uploadedFiles[type.key] && uploadStatus[type.key] !== 'uploading'">
-                <p class="text-sm font-medium text-gray-800 truncate text-center px-2">
+                <p class="text-sm font-medium text-gray-800 break-words text-center px-2 max-w-full">
                   {{ uploadedFiles[type.key]?.name }}
                 </p>
+
               </ng-container>
             </div>
           </div>
