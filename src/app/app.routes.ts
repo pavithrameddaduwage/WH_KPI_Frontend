@@ -4,6 +4,7 @@ import { FileUploadComponent } from './file-upload/file-upload.component';
 import { WeeklyReportsComponent } from './weekly-reports/weekly-reports.component';
 import { LoginComponent } from './login/login.component';
 import {AuthGuard} from "./auth.guard";
+import { HgusaEmployeeComponent } from './hgusa-employee/hgusa-employee.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login',pathMatch: 'full'},
@@ -11,6 +12,8 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, pathMatch: 'full',canActivate: [AuthGuard] },
   { path: 'daily', component: FileUploadComponent, pathMatch: 'full',canActivate: [AuthGuard] },
   { path: 'weekly', component: WeeklyReportsComponent,pathMatch: 'full', canActivate: [AuthGuard] },
+  { path: 'employee', component: HgusaEmployeeComponent,pathMatch: 'full', canActivate: [AuthGuard] },
+  
   { path: '**', redirectTo: 'login' }
 ];
 

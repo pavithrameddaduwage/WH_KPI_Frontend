@@ -17,12 +17,14 @@ import { AuthInterceptor } from './auth.interceptor';
 
 import { routes } from './app.routes';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HgusaEmployeeComponent } from './hgusa-employee/hgusa-employee.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     FileUploadComponent,
-    WeeklyReportsComponent
+    WeeklyReportsComponent,
+    HgusaEmployeeComponent,
     
   ],
   imports: [

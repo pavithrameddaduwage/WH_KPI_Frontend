@@ -1,0 +1,242 @@
+<main class="pt-20 pb-10">
+  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center p-6">
+    <div class="w-full max-w-xl">
+      <!-- Heading -->
+      <div class="mb-10 text-center transition-transform duration-300 hover:scale-105">
+        <h1
+          class="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-sky-700 to-cyan-500"
+        >
+          HGUSA Employee Details
+        </h1>
+      </div>
+
+      <!-- Upload Box (Centered) -->
+      <div class="flex justify-center mb-8">
+        <div
+          class="bg-white rounded-xl shadow-lg border overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 w-96"
+          [ngClass]="{
+            'border-red-300 ring-1 ring-red-200': uploadStatus[fileTypes[0].key] === 'failed',
+            'ring-1 ring-blue-200': isDragOver === fileTypes[0].key,
+            'opacity-70': isAnyUploading && uploadStatus[fileTypes[0].key] !== 'uploading'
+          }"
+        >
+          <div class="p-3 border-b border-gray-200">
+            <h3 class="text-sm font-semibold text-gray-800 text-center">
+              {{ fileTypes[0].label }}
+            </h3>
+          </div>
+          <div
+            class="p-4"
+            (click)="triggerFileInput(fileTypes[0].key)"
+            (drop)="onFileDrop($event, fileTypes[0].key)"
+            (dragover)="onDragOver($event, fileTypes[0].key)"
+            (dragleave)="onDragLeave($event)"
+          >
+            <div
+              class="border-2 border-dashed rounded-lg h-28 flex flex-col items-center justify-center cursor-pointer relative transition-all duration-200"
+              [ngClass]="{
+                'border-blue-400 bg-blue-50': isDragOver === fileTypes[0].key,
+                'border-green-400': uploadStatus[fileTypes[0].key] === 'uploaded',
+                'border-gray-300 hover:border-blue-400': uploadStatus[fileTypes[0].key] !== 'uploaded' && isDragOver !== fileTypes[0].key
+              }"
+            >
+              <label [for]="fileTypes[0].key" class="sr-only">
+                Upload {{ fileTypes[0].label }}
+              </label>
+              <input
+                type="file"
+                [id]="fileTypes[0].key"
+                hidden
+                (change)="onFileChange($event, fileTypes[0].key)"
+                #fileInput
+              />
+              <div
+                *ngIf="uploadStatus[fileTypes[0].key] === 'uploading'"
+                class="absolute inset-0 flex flex-col items-center justify-center bg-white/90 rounded-lg"
+              >
+                <div
+                  class="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-1"
+                ></div>
+                <p class="text-sm text-gray-600 font-medium">
+                  Uploading... {{ uploadProgress[fileTypes[0].key] }}%
+                </p>
+              </div>
+              <ng-container
+                *ngIf="!uploadedFiles[fileTypes[0].key] && uploadStatus[fileTypes[0].key] !== 'uploading'"
+              >
+                <div
+                  class="p-2 rounded-full bg-blue-100 mb-1 hover:bg-blue-200 transition-all"
+                >
+                  <svg
+                    class="w-6 h-6 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                </div>
+                <p class="text-sm font-medium text-gray-700">
+                  Drag & drop files
+                </p>
+                <p class="text-sm text-gray-400">or click to browse</p>
+              </ng-container>
+              <ng-container
+                *ngIf="uploadedFiles[fileTypes[0].key] && uploadStatus[fileTypes[0].key] !== 'uploading'"
+              >
+                <div class="w-full px-2">
+                  <p
+                    class="text-sm font-medium text-gray-800 break-words text-center px-2 max-w-full"
+                  >
+                    {{ uploadedFiles[fileTypes[0].key]?.name }}
+                  </p>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+          <div class="px-3 pb-3">
+            <div
+              *ngIf="uploadStatus[fileTypes[0].key] === 'uploaded'"
+              class="text-sm text-green-600 flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 mr-1 text-green-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Uploaded
+            </div>
+            <div
+              *ngIf="uploadStatus[fileTypes[0].key] === 'failed'"
+              class="text-sm text-red-600 flex items-center justify-center"
+            >
+              <svg
+                class="w-4 h-4 mr-1 text-red-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Failed - try again
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap justify-center gap-3 mt-6">
+        <button
+          type="button"
+          (click)="onSubmitAllSequential()"
+          class="px-5 py-2 bg-gradient-to-r from-sky-100 to-sky-200 hover:from-sky-200 hover:to-sky-300 text-sky-700 text-sm font-medium rounded-md shadow-sm transition-all duration-300 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-sky-300 focus:ring-offset-1"
+        >
+          <div class="flex items-center">
+            <svg
+              *ngIf="isAnyUploading"
+              class="animate-spin w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            {{ isAnyUploading ? 'Uploading...' : 'Upload' }}
+          </div>
+        </button>
+        <button
+          type="button"
+          (click)="cancelAll()"
+          [disabled]="!isAnyUploading"
+          class="px-5 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-md shadow transition duration-300 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          Cancel
+        </button>
+        <button
+          *ngIf="hasFileSelected || allUploadsComplete"
+          type="button"
+          (click)="confirmClearFiles()"
+          class="px-5 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-md shadow transition duration-300"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Dialog -->
+  <div *ngIf="showClearConfirmDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" [@fadeInOut]>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-xs border-t-4 border-blue-500">
+      <div class="p-4 flex items-start">
+        <div class="flex-shrink-0 p-2 rounded-full bg-blue-100">
+          <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-base font-medium text-gray-900">Confirm Clear</h3>
+          <p class="text-sm text-gray-600 mt-1">Clear all uploaded files?</p>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 flex justify-end gap-2">
+        <button (click)="showClearConfirmDialog = false"
+                class="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm rounded shadow-sm">
+          Cancel
+        </button>
+        <button (click)="clearAllFiles()"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded shadow-sm">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Dialog -->
+  <div *ngIf="showErrorDialog" 
+       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+       [@fadeInOut]>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-xs border-t-4 border-red-500">
+      <div class="p-4 flex items-start">
+        <div class="flex-shrink-0 p-1.5 rounded-full bg-red-100">
+          <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-gray-900">{{ dialogHeader }}</h3>
+          <div class="mt-1">
+            <p class="text-xs text-gray-600">{{ dialogMessage }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 flex justify-end">
+        <button
+          (click)="showErrorDialog = false"
+          class="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded shadow-sm transition-colors duration-200 focus:outline-none focus:ring-1 focus:ring-red-500"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
